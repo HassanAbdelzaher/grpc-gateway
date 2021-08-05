@@ -1,8 +1,10 @@
 package core
 
 import (
-"fmt"
+	"encoding/json"
+	"fmt"
 	"github.com/wmdev4/shipswift-gateway/config"
+	grpc2 "github.com/wmdev4/shipswift-gateway/grpc"
 	"log"
 "net"
 "net/http"
@@ -26,7 +28,33 @@ _ "golang.org/x/net/trace" // register in DefaultServerMux
 "google.golang.org/grpc"
 "google.golang.org/grpc/grpclog"
 "google.golang.org/grpc/metadata"
+"golang.org/x/net/http2"
+"golang.org/x/net/http2/h2c"
 )
+var infoProvider=grpc2.ReflectionServiceProvider{}
+
+func HandleListMethods(w http.ResponseWriter, r *http.Request) {
+	defer func() {
+		if r := recover(); r != nil {
+			fmt.Println("Recovered in HandleListMethods", r)
+		}
+	}()
+
+	var ret = make(map[string]interface{})
+	//fullName := fmt.Sprintf("%v.%v.%v", pckg, service, method)
+	addr := r.URL.Query().Get("address")
+	if addr == "" {
+		addr = r.URL.Query().Get("url")
+	}
+	services, err := infoProvider.ListMethods(r.Context(), addr)
+	if err != nil {
+		ret["error"] = err.Error()
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(services)
+}
+
 
 func Start() {
 	var conf=config.Config
@@ -88,6 +116,7 @@ func Start() {
 		// Debug server.
 		debugServer := buildServer(wrappedGrpc)
 		http.Handle("/metrics", promhttp.Handler())
+		http.HandleFunc("/info", HandleListMethods)
 		debugListener := buildListenerOrFail("http", conf.HttpPort)
 		serveServer(debugServer, debugListener, "http", errChan)
 	}
@@ -96,7 +125,14 @@ func Start() {
 		// Debug server.
 		servingServer := buildServer(wrappedGrpc)
 		servingListener := buildListenerOrFail("http", conf.HttpTlsPort)
-		servingListener = tls.NewListener(servingListener, buildServerTlsOrFail(nil))
+		tlsConfig:=buildServerTlsOrFail(nil)
+		if tlsConfig==nil{
+			tlsConfig=&tls.Config{
+				Certificates: []tls.Certificate{},
+				// GetCertificate: getCertificate,
+			}
+		}
+		servingListener = tls.NewListener(servingListener, tlsConfig)
 		serveServer(servingServer, servingListener, "http_tls", errChan)
 	}
 
@@ -105,12 +141,17 @@ func Start() {
 
 func buildServer(wrappedGrpc *grpcweb.WrappedGrpcServer) *http.Server {
 	var conf=config.Config
+	h2s := &http2.Server{}
+	handler:=http.HandlerFunc(func(resp http.ResponseWriter, req *http.Request) {
+		logrus.Println(req.Host)
+		wrappedGrpc.ServeHTTP(resp, req)
+
+	})
+	h2Hnadler:=h2c.NewHandler(handler, h2s)
 	return &http.Server{
 		WriteTimeout:conf.HttpMaxWriteTimeout.Duration,
 		ReadTimeout:  conf.HttpMaxReadTimeout.Duration,
-		Handler: http.HandlerFunc(func(resp http.ResponseWriter, req *http.Request) {
-			wrappedGrpc.ServeHTTP(resp, req)
-		}),
+		Handler: h2Hnadler,
 	}
 }
 
@@ -122,7 +163,6 @@ func serveServer(server *http.Server, listener net.Listener, name string, errCha
 		}
 	}()
 }
-
 
 func buildGrpcProxyServer(logger *logrus.Entry) *grpc.Server {
 	var conf=config.Config

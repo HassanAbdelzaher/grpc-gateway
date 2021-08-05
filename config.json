@@ -2,7 +2,7 @@
   "host": "0.0.0.0",
   "http_port": 8089,
   "tls_port": 8090,
-  "run_tls_server": false,
+  "run_tls_server": true,
   "run_http_server": true,
   "allow_all_origin": true,
   "allowed_origins": [],
@@ -13,9 +13,9 @@
   "http_max_write_timeout": "10s",
   "http_max_read_timeout": "10s",
   "services": [{
-    "service_name":"storemanager.StoreManager",
+    "service_name":"helloworld.Greeter",
     "backends": [{
-      "address": "host.docker.internal:8020",
+      "address": "localhost:8091",
       "is_using_tls": false,
       "tls_no_verify": true,
       "tls_client_cert": null,

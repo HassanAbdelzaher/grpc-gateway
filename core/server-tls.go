@@ -17,8 +17,10 @@ type TlsServerOptions struct{
 }
 
 func buildServerTlsOrFail(o *TlsServerOptions) *tls.Config {
-	if o.TlsServerCert == "" || o.TlsServerKey == "" {
-		logrus.Fatalf("flags server_tls_cert_file and server_tls_key_file must be set")
+
+	if o==nil || o.TlsServerCert == "" || o.TlsServerKey == "" {
+		logrus.Println("flags server_tls_cert_file and server_tls_key_file must be set")
+		return nil
 	}
 	tlsConfig, err := connhelpers.TlsConfigForServerCerts(o.TlsServerCert, o.TlsServerKey)
 	if err != nil {
