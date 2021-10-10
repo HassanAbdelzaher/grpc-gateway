@@ -17,12 +17,6 @@ pipeline {
             }
         }
         
-        stage('Build') {
-            steps {
-                echo 'Compiling and building'
-                sh 'go build'
-            }
-        }
 
         stage('Test') {
             steps {
@@ -34,6 +28,13 @@ pipeline {
                     echo 'Running test'
                     sh 'cd test && go test -v'
                 }
+            }
+        }
+
+        stage('Build') {
+            steps {
+                echo 'Compiling and building'
+                sh 'go build'
             }
         }
         

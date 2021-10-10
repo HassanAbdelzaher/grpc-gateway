@@ -3,35 +3,37 @@ package core
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/wmdev4/shipswift-gateway/config"
-	grpc2 "github.com/wmdev4/shipswift-gateway/grpc"
 	"log"
-"net"
-"net/http"
-_ "net/http/pprof" // register in DefaultServerMux
-"os"
+	"net"
+	"net/http"
+	_ "net/http/pprof" // register in DefaultServerMux
+	"os"
 	"time"
 
-"crypto/tls"
+	"github.com/wmdev4/shipswift-gateway/config"
+	grpc2 "github.com/wmdev4/shipswift-gateway/grpc"
 
-grpc_middleware "github.com/grpc-ecosystem/go-grpc-middleware"
-grpc_logrus "github.com/grpc-ecosystem/go-grpc-middleware/logging/logrus"
-grpc_prometheus "github.com/grpc-ecosystem/go-grpc-prometheus"
-"github.com/improbable-eng/grpc-web/go/grpcweb"
-"github.com/mwitkow/go-conntrack"
-"github.com/mwitkow/grpc-proxy/proxy"
-"github.com/prometheus/client_golang/prometheus/promhttp"
-"github.com/sirupsen/logrus"
-"github.com/spf13/pflag"
-"golang.org/x/net/context"
-_ "golang.org/x/net/trace" // register in DefaultServerMux
-"google.golang.org/grpc"
-"google.golang.org/grpc/grpclog"
-"google.golang.org/grpc/metadata"
-"golang.org/x/net/http2"
-"golang.org/x/net/http2/h2c"
+	"crypto/tls"
+
+	grpc_middleware "github.com/grpc-ecosystem/go-grpc-middleware"
+	grpc_logrus "github.com/grpc-ecosystem/go-grpc-middleware/logging/logrus"
+	grpc_prometheus "github.com/grpc-ecosystem/go-grpc-prometheus"
+	"github.com/improbable-eng/grpc-web/go/grpcweb"
+	"github.com/mwitkow/go-conntrack"
+	"github.com/mwitkow/grpc-proxy/proxy"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
+	"github.com/sirupsen/logrus"
+	"github.com/spf13/pflag"
+	"golang.org/x/net/context"
+	"golang.org/x/net/http2"
+	"golang.org/x/net/http2/h2c"
+	_ "golang.org/x/net/trace" // register in DefaultServerMux
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/grpclog"
+	"google.golang.org/grpc/metadata"
 )
-var infoProvider=grpc2.ReflectionServiceProvider{}
+
+var infoProvider = grpc2.ReflectionServiceProvider{}
 
 func HandleListMethods(w http.ResponseWriter, r *http.Request) {
 	defer func() {
@@ -55,9 +57,8 @@ func HandleListMethods(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(services)
 }
 
-
 func Start() {
-	var conf=config.Config
+	var conf = config.Config
 	pflag.Parse()
 	for _, flag := range pflag.Args() {
 		if flag == "true" || flag == "false" {
@@ -125,9 +126,9 @@ func Start() {
 		// Debug server.
 		servingServer := buildServer(wrappedGrpc)
 		servingListener := buildListenerOrFail("http", conf.HttpTlsPort)
-		tlsConfig:=buildServerTlsOrFail(nil)
-		if tlsConfig==nil{
-			tlsConfig=&tls.Config{
+		tlsConfig := buildServerTlsOrFail(nil)
+		if tlsConfig == nil {
+			tlsConfig = &tls.Config{
 				Certificates: []tls.Certificate{},
 				// GetCertificate: getCertificate,
 			}
@@ -140,18 +141,14 @@ func Start() {
 }
 
 func buildServer(wrappedGrpc *grpcweb.WrappedGrpcServer) *http.Server {
-	var conf=config.Config
-	h2s := &http2.Server{}
-	handler:=http.HandlerFunc(func(resp http.ResponseWriter, req *http.Request) {
-		logrus.Println(req.Host)
-		wrappedGrpc.ServeHTTP(resp, req)
-
-	})
-	h2Hnadler:=h2c.NewHandler(handler, h2s)
+	//build with enabling http2 clear text
+	var conf = config.Config
+	h2s := &http2.Server{} // http2 clear text
+	h2Hnadler := h2c.NewHandler(wrappedGrpc, h2s)
 	return &http.Server{
-		WriteTimeout:conf.HttpMaxWriteTimeout.Duration,
+		WriteTimeout: conf.HttpMaxWriteTimeout.Duration,
 		ReadTimeout:  conf.HttpMaxReadTimeout.Duration,
-		Handler: h2Hnadler,
+		Handler:      h2Hnadler,
 	}
 }
 
@@ -165,7 +162,7 @@ func serveServer(server *http.Server, listener net.Listener, name string, errCha
 }
 
 func buildGrpcProxyServer(logger *logrus.Entry) *grpc.Server {
-	var conf=config.Config
+	var conf = config.Config
 	// gRPC-wide changes.
 	grpc.EnableTracing = true
 	grpc_logrus.ReplaceGrpcLogger(logger)
@@ -173,9 +170,9 @@ func buildGrpcProxyServer(logger *logrus.Entry) *grpc.Server {
 	// gRPC proxy logic.
 
 	director := func(ctx context.Context, fullMethodName string) (context.Context, *grpc.ClientConn, error) {
-		backendConn,err := findService(fullMethodName)
-		if err!=nil{
-			return ctx,nil,err
+		backendConn, err := findService(fullMethodName)
+		if err != nil {
+			return ctx, nil, err
 		}
 		md, _ := metadata.FromIncomingContext(ctx)
 		outCtx, _ := context.WithCancel(ctx)
@@ -205,7 +202,7 @@ func buildGrpcProxyServer(logger *logrus.Entry) *grpc.Server {
 }
 
 func buildListenerOrFail(name string, port int) net.Listener {
-	var conf=config.Config
+	var conf = config.Config
 	addr := fmt.Sprintf("%s:%d", conf.BindAddr, port)
 	listener, err := net.Listen("tcp", addr)
 	if err != nil {
@@ -219,7 +216,7 @@ func buildListenerOrFail(name string, port int) net.Listener {
 }
 
 func makeHttpOriginFunc(allowedOrigins *allowedOrigins) func(origin string) bool {
-	var conf=config.Config
+	var conf = config.Config
 	if conf.AllowAllOrigins {
 		return func(origin string) bool {
 			return true
@@ -229,7 +226,7 @@ func makeHttpOriginFunc(allowedOrigins *allowedOrigins) func(origin string) bool
 }
 
 func makeWebsocketOriginFunc(allowedOrigins *allowedOrigins) func(req *http.Request) bool {
-	var conf=config.Config
+	var conf = config.Config
 	if conf.AllowAllOrigins {
 		return func(req *http.Request) bool {
 			return true
