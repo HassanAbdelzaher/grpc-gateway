@@ -1,20 +1,21 @@
-package grpc
+package grpc_invoke
 
 import (
 	"fmt"
+	"io"
+
 	"github.com/fullstorydev/grpcurl"
 	"github.com/golang/protobuf/proto"
 	"github.com/jhump/protoreflect/desc"
 	"google.golang.org/grpc/metadata"
 	"google.golang.org/grpc/status"
-	"io"
 )
 
 // DefaultEventHandler logs events to a writer. This is not thread-safe, but is
 // safe for use with InvokeRPC as long as NumResponses and Status are not read
 // until the call to InvokeRPC completes.
 type DefaultEventHandler struct {
-	Out       io.Writer
+	Out io.Writer
 	//Formatter Formatter
 	// 0 = default
 	// 1 = verbose
@@ -27,7 +28,6 @@ type DefaultEventHandler struct {
 	// nil if the RPC is still in progress.
 	Status *status.Status
 }
-
 
 func NewDefaultEventHandler(out io.Writer, descSource grpcurl.DescriptorSource, verbose bool) *DefaultEventHandler {
 	verbosityLevel := 0

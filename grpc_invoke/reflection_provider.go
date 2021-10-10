@@ -1,19 +1,19 @@
-package grpc
+package grpc_invoke
 
 import (
 	"context"
 	"fmt"
-	"github.com/jhump/protoreflect/desc"
+
 	curl "github.com/fullstorydev/grpcurl"
+	"github.com/jhump/protoreflect/desc"
 	"github.com/jhump/protoreflect/grpcreflect"
 	rpb "google.golang.org/grpc/reflection/grpc_reflection_v1alpha"
 )
 
 type ReflectionServiceProvider struct {
-
 }
 
-func (p *ReflectionServiceProvider) ListMethods(ctx context.Context,addr string)([]*ServiceInfo,error){
+func (p *ReflectionServiceProvider) ListMethods(ctx context.Context, addr string) ([]*ServiceInfo, error) {
 	bcon, err := curl.BlockingDial(ctx, "tcp", addr, nil)
 	if err != nil {
 		return nil, err
@@ -58,7 +58,7 @@ func ListMethodsFromSource(source curl.DescriptorSource) ([]*ServiceInfo, error)
 				IsClientStreaming:  m.IsClientStreaming(),
 				IsServerStreaming:  m.IsServerStreaming(),
 				Desciptor:          m,
-				Others:            make(map[string]interface{}),
+				Others:             make(map[string]interface{}),
 			}
 			method.InputFields = m.GetInputType().GetFields()
 			method.OutputFields = m.GetOutputType().GetFields()

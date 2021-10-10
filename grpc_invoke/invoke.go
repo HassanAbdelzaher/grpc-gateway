@@ -1,14 +1,15 @@
-package grpc
+package grpc_invoke
 
 import (
 	"bytes"
 	"context"
 	"fmt"
+	"io"
+
 	curl "github.com/fullstorydev/grpcurl"
 	"github.com/jhump/protoreflect/grpcreflect"
 	"google.golang.org/grpc/codes"
 	rpb "google.golang.org/grpc/reflection/grpc_reflection_v1alpha"
-	"io"
 )
 
 //GrpcError grpc error struct
@@ -53,9 +54,8 @@ func FromError(_err error) *GrpcError {
 	return err
 }
 
-
 // InvokeRPCRequest InvokeRPCRequest
-func InvokegRPCRequest(ctx context.Context,addr string,fullMethodName string, message []byte, headers []string, writer io.Writer) (grpcError *GrpcError) {
+func InvokegRPCRequest(ctx context.Context, addr string, fullMethodName string, message []byte, headers []string, writer io.Writer) (grpcError *GrpcError) {
 	defer func() {
 		if r := recover(); r != nil {
 			fmt.Println("Recovered in InvokeRPCRequest", r)
@@ -94,7 +94,7 @@ func InvokegRPCRequest(ctx context.Context,addr string,fullMethodName string, me
 	parser := NewProtobuffRequestParser(in)
 	h := NewDefaultEventHandler(writer, source, false)
 
-	err = curl.InvokeRPC(ctx, source, bcon, fullMethodName, headers, h,parser.Next)
+	err = curl.InvokeRPC(ctx, source, bcon, fullMethodName, headers, h, parser.Next)
 	if err != nil {
 		return FromError(err)
 	}
@@ -132,4 +132,3 @@ func InvokegRPCRequest(ctx context.Context,addr string,fullMethodName string, me
 	//str := writer.Buf.String()
 	return nil
 }
-

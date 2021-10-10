@@ -1,10 +1,11 @@
-package grpc
+package grpc_invoke
 
 import (
 	"bufio"
+	"io"
+
 	"github.com/fullstorydev/grpcurl"
 	"github.com/golang/protobuf/proto"
-	"io"
 )
 
 type protoBuffRequestParser struct {
@@ -34,14 +35,14 @@ func (f *protoBuffRequestParser) Next(msg proto.Message) error {
 	}
 
 	var b []byte
-	_,f.err = f.r.Read(b)
+	_, f.err = f.r.Read(b)
 	if f.err != nil && f.err != io.EOF {
 		return f.err
 	}
 
 	f.requestCount++
 
-	return proto.Unmarshal(b,msg)
+	return proto.Unmarshal(b, msg)
 }
 
 func (f *protoBuffRequestParser) NumRequests() int {

@@ -88,7 +88,7 @@ type MicroService struct {
 	Backends    []*BackEndConfig `json:"backends"`
 }
 
-type GatewayConfig2 struct {
+type __GatewayConfig2 struct {
 	BindAddr           string   `json:"host"`
 	HttpPort           int      `json:"http_port"`
 	HttpTlsPort        int      `json:"tls_port"`
