@@ -93,6 +93,7 @@ func serveServer(server *http.Server, listener net.Listener, name string, errCha
 func buildListenerOrFail(name string, port int) net.Listener {
 	var conf = config.Config
 	addr := fmt.Sprintf("%s:%d", conf.BindAddr, port)
+	logrus.Println(addr)
 	listener, err := net.Listen("tcp", addr)
 	if err != nil {
 		log.Fatalf("failed listening for '%v' on %v: %v", name, port, err)

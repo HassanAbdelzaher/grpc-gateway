@@ -88,17 +88,9 @@ type MicroService struct {
 	Backends    []*BackEndConfig `json:"backends"`
 }
 
-type __GatewayConfig2 struct {
-	BindAddr           string   `json:"host"`
-	HttpPort           int      `json:"http_port"`
-	HttpTlsPort        int      `json:"tls_port"`
-	AllowAllOrigins    bool     `json:"allow_all_origin"`
-	AllowedOrigins     []string `json:"allowed_origins"`
-	AllowedHeaders     []string `json:"allowed_headers"`
-	RunHttpServer      bool     `json:"run_http_server"`
-	RunTlsServer       bool     `json:"run_tls_server"`
-	UseWebsockets      bool     `json:"use_websockets"`
-	MaxCallRecvMsgSize int      `json:"max_call_recv_msg_size"`
+type HttpRoute struct {
+	Url      string           `json:"url"`
+	Backends []*BackEndConfig `json:"backends"`
 }
 
 type GatewayConfig struct {
@@ -115,5 +107,6 @@ type GatewayConfig struct {
 	WebsocketPingInterval Duration        `json:"websocket_ping_interval"`
 	HttpMaxWriteTimeout   Duration        `json:"http_max_write_timeout"`
 	HttpMaxReadTimeout    Duration        `json:"http_max_read_timeout"`
-	Services              []*MicroService `json:"services"`
+	Services              []*MicroService `json:"grpc_services"`
+	HttpRoutes            []*HttpRoute    `json:"http_routes"`
 }

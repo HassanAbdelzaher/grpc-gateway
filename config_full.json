@@ -1,0 +1,43 @@
+{
+  "host": "0.0.0.0",
+  "http_port": 25555,
+  "tls_port": 8090,
+  "run_tls_server": true,
+  "run_http_server": true,
+  "allow_all_origin": true,
+  "allowed_origins": [],
+  "allowed_headers": [],
+  "use_websockets": false,
+  "max_call_recv_msg_size": 5242880,
+  "websocket_ping_interval": "10s",
+  "http_max_write_timeout": "10s",
+  "http_max_read_timeout": "10s",
+  "services": [
+    {
+      "service_name": "helloworld.Greeter",
+      "backends": [
+        {
+          "address": "localhost:8091",
+          "is_using_tls": false,
+          "tls_no_verify": true,
+          "tls_client_cert": null,
+          "tls_client_key": null,
+          "max_call_recv_msg_size": 5242880,
+          "tls_ca": [],
+          "default_authority": null,
+          "backoff_max_delay": null
+        }
+      ]
+    }
+  ],
+  "routes": [
+    {
+      "url": "/api/{controller}/{method}",
+      "backends": [
+        {
+          "address": "http://localhost:8091/api/{controller}/{method}"
+        }
+      ]
+    }
+  ]
+}

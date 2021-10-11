@@ -1,11 +1,15 @@
 package http_proxy
 
 import (
+	"fmt"
 	"io"
-	"log"
 	"net"
 	"net/http"
 	"strings"
+
+	"github.com/sirupsen/logrus"
+	"github.com/wmdev4/shipswift-gateway/config"
+	"github.com/wmdev4/shipswift-gateway/core/balancer"
 )
 
 // Hop-by-hop headers. These are removed when sent to the backend.
@@ -46,45 +50,63 @@ func appendHostToXForwardHeader(header http.Header, host string) {
 }
 
 type httpProxy struct {
+	balancer *balancer.LoadBalancer
 }
 
 func NewHttpProxy() *httpProxy {
-	return &httpProxy{}
+	balancer := balancer.NewLoadBalancer()
+	routes := config.Config.HttpRoutes
+	if routes != nil {
+		for _, r := range routes {
+			if r.Backends == nil {
+				continue
+			}
+			for _, b := range r.Backends {
+				if b.BackendHostPort == "" {
+					continue
+				}
+				balancer.AddToBackend(r.Url, b.BackendHostPort)
+			}
+		}
+	}
+	return &httpProxy{balancer: balancer}
 }
-
-func (p *httpProxy) ServeHTTP(wr http.ResponseWriter, req *http.Request) {
-	log.Println(req.RemoteAddr, " ", req.Method, " ", req.URL)
-
-	if req.URL.Scheme != "http" && req.URL.Scheme != "https" {
-		msg := "unsupported protocal scheme " + req.URL.Scheme
-		http.Error(wr, msg, http.StatusBadRequest)
-		log.Println(msg)
+func (p *httpProxy) ServeHTTP(wr http.ResponseWriter, r *http.Request) {
+	defer func() {
+		if r := recover(); r != nil {
+			wr.WriteHeader(500)
+			fmt.Fprint(wr, r)
+		}
+	}()
+	path := r.URL.Path
+	addr, err := p.balancer.Get(path)
+	if err != nil {
+		http.Error(wr, "Gateway Error : "+err.Error(), http.StatusInternalServerError)
 		return
 	}
-
+	url := addr + r.RequestURI
+	logrus.Println("fowrward to:", url)
 	client := &http.Client{}
-
-	//http: Request.RequestURI can't be set in client requests.
-	//http://golang.org/src/pkg/net/http/client.go
-	req.RequestURI = ""
-
-	delHopHeaders(req.Header)
-
-	if clientIP, _, err := net.SplitHostPort(req.RemoteAddr); err == nil {
+	req, err := http.NewRequest(r.Method, url, r.Body)
+	if err != nil {
+		http.Error(wr, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	for name, value := range r.Header {
+		val := strings.Join(value, ",")
+		req.Header.Set(name, val)
+	}
+	delHopHeaders(r.Header)
+	if clientIP, _, err := net.SplitHostPort(r.RemoteAddr); err == nil {
 		appendHostToXForwardHeader(req.Header, clientIP)
 	}
-
 	resp, err := client.Do(req)
 	if err != nil {
-		http.Error(wr, "Server Error", http.StatusInternalServerError)
-		log.Fatal("ServeHTTP:", err)
+		http.Error(wr, "Server Error : "+err.Error(), http.StatusInternalServerError)
+		return
 	}
 	defer resp.Body.Close()
-
-	log.Println(req.RemoteAddr, " ", resp.Status)
-
 	delHopHeaders(resp.Header)
-
 	copyHeader(wr.Header(), resp.Header)
 	wr.WriteHeader(resp.StatusCode)
 	io.Copy(wr, resp.Body)
