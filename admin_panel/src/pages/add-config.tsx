@@ -10,10 +10,15 @@ const useStyles = makeStyles((theme) => ({
         maxWidth: "80%",
         margin: "auto",
         height:'100%',
-        boxShadow: "0, 0, 30px rgba(0,0,0,0.4)"        
+        textAlign:'center',
     },
     styleFormControl: {
         width: '100%'
+    },
+    btn:{
+        marginTop:20,
+        float :'right',
+        
     }
 }))
 interface Iprops {
@@ -33,7 +38,7 @@ export function AddConfig(props: Iprops) {
     }
     return (
         <div className={classes.root}>
-        <h2> add new confic</h2>
+        <h2> add new config</h2>
             <form  onSubmit={handleSubmit(onSubmit)}>
             <Grid container spacing={3} >
               <Grid item xs={4}>
@@ -55,11 +60,12 @@ export function AddConfig(props: Iprops) {
                    <MasTextField  inputRef1={register} label={'http_max_write_timeout'} name={'http_max_write_timeout'} required={false} />
               </Grid>
               <Grid item xs={4}>
+                  <MasTextField  inputRef1={register} label={'http_max_read_timeout'} name={'http_max_read_timeout'} required={false} />
+              </Grid> 
+              <Grid item xs={4}>
                   <MasCheckBox name='run_http_server' label='run_http_server' inputRef1={register}/>
               </Grid>
-              <Grid item xs={4}>
-                  <MasTextField  inputRef1={register} label={'http_max_read_timeout'} name={'http_max_read_timeout'} required={false} />
-              </Grid>             
+                        
               <Grid item xs={4}>
                   <MasCheckBox name='run_tls_server' label='run_tls_server' inputRef1={register}/>
               </Grid>
@@ -70,10 +76,10 @@ export function AddConfig(props: Iprops) {
                   <MasCheckBox name='use_websockets' label='use_websockets' inputRef1={register} onClick={handleSubmit(onSubmit)}/>
               </Grid>
             </Grid>
-            <MasButton type="submit" label='save' variant='contained' color='secondary'/>
-
-            <MasButton label='add New Servise' variant='contained' type="button" color='primary' onClick={()=>setOpenForm(true)}/>
-
+        <div className={classes.btn}>
+            <MasButton type="submit" label='save' variant='outlined' color='secondary'/>
+            <MasButton label='add New Servise' variant='outlined' type="button" color='primary' onClick={()=>setOpenForm(true)}/>
+        </div>
             </form>
                 <AddService openForm={openForm} onSave={(data)=>{
                     setServices(data)

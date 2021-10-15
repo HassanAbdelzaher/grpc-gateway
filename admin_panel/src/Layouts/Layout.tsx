@@ -47,15 +47,15 @@ export default function Layout() {
   
    
   return (
-    <div className={classes.root}>
-      <Header
+    <div >
+    <Header
         drawerWidth={width}
         titleStyle={classes.title}
         title=" test"
         handleDrawerOpen={handleClicked}
         open={open}
-      />
-        <div>
+      />      
+      <div style={{height:'80%'}}>
         <Routes />
         </div>
     </div>

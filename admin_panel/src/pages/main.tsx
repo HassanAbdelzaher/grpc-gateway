@@ -1,23 +1,21 @@
 import React,{useEffect} from 'react'
 import {MasList,MasButton} from '../components/ui'
-import { makeStyles } from '@material-ui/core'
+import { IconButton, makeStyles } from '@material-ui/core'
 import {Link} from 'react-router-dom'
 import axios from 'axios'
+import TableApi from '../components/table'
+import * as Icons  from '@material-ui/icons'
 let configurl='./configpane.json'
 const useStyles = makeStyles((theme) => ({
     root: {
-        maxWidth: "50%",
-        margin: " 30px auto",
-        boxShadow: "0, 0, 30px rgba(0,0,0,0.4)" ,
-        background:'rgb(173 181 226 / 7%)',
+        maxWidth: "80%",
         padding:10,
-        border:'1px solid',
-        borderRadius:5
-        
-
+        borderRadius:5,
+        margin:'auto'
     },
     list: {
         width: '60%',
+        background:'white',
         //direction:'rtl'
     }
 }))
@@ -28,16 +26,24 @@ export const Main=()=>{
 const [state,setState]=React.useState<any>(null)
   useEffect(()=>{
      axios.get(configurl).then(res=>{
-         setState(res.data)
+         setState([res.data])
      })      
   },[])
     return (
         <div className={classes.root}> 
-            <h2 style={{fontSize:30}}> Servies Names</h2>
-
-            <MasList listStyle={classes.list} name='services' itemValue='service_name' primaryItemText='service_name' items={state?.services}/>
+           <div style={{display:'inline-block'}}> <h2> Servies Names </h2> </div>
+           <div style={{display:'inline-block'}}>
+           <IconButton  style={{padding: "4px", paddingBottom: "0"}} >
+           <Link to='/addConfig'> 
+           <Icons.AddCircleOutlineOutlined/>
+           </Link>
+			</IconButton>
+           </div>
+            <div>
+                <TableApi data={state} columns={['host','http_port']} />
+            </div>
+            {/* <MasList listStyle={classes.list} name='services' itemValue='service_name' primaryItemText='service_name' items={state?.services}/> */}
             <br/>
-            <Link to='/addConfig'> <MasButton label='add New Config' variant='contained' type="button" color='primary' /></Link>
         </div> 
     )
 }

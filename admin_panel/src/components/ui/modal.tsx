@@ -40,6 +40,7 @@ const useStyles = makeStyles((theme) => ({
     // marginTop: theme.spacing(2),
     padding: "16px",
     justifyContent: "flex-start",
+    background:'#f1f1f2'
   },
 }));
 export interface Iprops {
@@ -71,8 +72,8 @@ export function MasModal(props: Iprops) {
   const btnLabel = btonLabel
     ? btonLabel
     : formType === "new"
-    ? "حفظ"
-    : "تعديل"
+    ? "save"
+    : "update"
 
   return (
     <Dialog
@@ -130,7 +131,7 @@ export function MasModal(props: Iprops) {
           color="default"
           type="button"
           variant="outlined"
-          label="إلغاء"
+          label="cancel"
           onClick={onClose}
         />
       </DialogActions>
