@@ -61,21 +61,24 @@ export function AddConfig(props: Iprops) {
               </Grid>
               <Grid item xs={4}>
                   <MasTextField  inputRef1={register} label={'http_max_read_timeout'} name={'http_max_read_timeout'} required={false} />
-              </Grid> 
-              <Grid item xs={4}>
+              </Grid>              
+             
+            </Grid>
+            <Grid container xs={12} spacing={2}>
+              <Grid item xs={3}>
                   <MasCheckBox name='run_http_server' label='run_http_server' inputRef1={register}/>
               </Grid>
                         
-              <Grid item xs={4}>
+              <Grid item xs={3}>
                   <MasCheckBox name='run_tls_server' label='run_tls_server' inputRef1={register}/>
               </Grid>
-              <Grid item xs={4}>
+              <Grid item xs={3}>
                   <MasCheckBox name='allow_all_origin' label='allow_all_origin' inputRef1={register}/>
               </Grid>
-              <Grid item xs={4}>
+              <Grid item xs={3}>
                   <MasCheckBox name='use_websockets' label='use_websockets' inputRef1={register} onClick={handleSubmit(onSubmit)}/>
               </Grid>
-            </Grid>
+              </Grid>
         <div className={classes.btn}>
             <MasButton type="submit" label='save' variant='outlined' color='secondary'/>
             <MasButton label='add New Servise' variant='outlined' type="button" color='primary' onClick={()=>setOpenForm(true)}/>

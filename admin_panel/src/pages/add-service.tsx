@@ -48,33 +48,34 @@ export function AddService(props: Iprops) {
         <MasModal title='add new service' width='lg' formType='new' open={openForm} onClose={onClose} onSave={handleSubmit(onSubmit)}>
         <div className={classes.root}>
             <form onSubmit={handleSubmit(onSubmit)}>
-            <Grid item xs={6}>
+            <Grid item xs={12}>
                  <MasTextField  inputRef1={register} label={'service_name'} name={'service_name'}  required={false}/>
               </Grid>
               <h5>backend configration</h5>
-            <Grid container spacing={3} >          
-              <Grid item xs={6}>
+            <Grid container spacing={2} >          
+              <Grid item xs={4}>
                  <MasTextField  inputRef1={register} label={'max_call_recv_msg_size'} name={'max_call_recv_msg_size'} required={false} type='number' />
               </Grid>              
-              <Grid item xs={6}>
+              <Grid item xs={4}>
                  <MasTextField  inputRef1={register} label={'tls_client_cert'} name={'tls_client_cert'} required={false}  />
               </Grid>
-              <Grid item xs={6}>
+              <Grid item xs={4}>
                  <MasTextField  inputRef1={register} label={'tls_client_key'} name={'tls_client_key'} required={false}  />
               </Grid>              
-              <Grid item xs={6}>
+              <Grid item xs={4}>
                  <MasTextField  inputRef1={register} label={'backoff_max_delay'} name={'backoff_max_delay'} required={false}  />
               </Grid> 
-              <Grid item xs={6}>
+              <Grid item xs={4}>
                  <MasTextField  inputRef1={register} label={'default_authority'} name={'default_authority'} required={false}  />
-              </Grid>                          
-              <Grid item xs={6}>
+              </Grid>  
+            </Grid>
+            <Grid container spacing={2}>
+            <Grid item xs={6}>
                   <MasCheckBox name='tls_no_verify' label='tls_no_verify' inputRef1={register}/>
               </Grid>  
               <Grid item xs={6}>
                   <MasCheckBox name='is_using_tls' label='is_using_tls' inputRef1={register}/>
-              </Grid>            
-                       
+              </Grid> 
             </Grid>
             {/* <MasButton type="submit" label='save' variant='contained' color='secondary'/> */}
             </form>
