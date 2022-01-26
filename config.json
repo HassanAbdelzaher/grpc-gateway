@@ -1,6 +1,6 @@
 {
   "host": "0.0.0.0",
-  "http_port": 25555,
+  "http_port": 7000,
   "tls_port": 8090,
   "run_tls_server": true,
   "run_http_server": true,
@@ -9,10 +9,26 @@
   "allowed_headers": [],
   "grpc_services": [
     {
-      "service_name": "helloworld.Greeter",
+      "service_name": "billing.Engine",
       "backends": [
         {
-          "address": "localhost:8091"
+          "address": "localhost:9002"
+        }
+      ]
+    },
+    {
+      "service_name": "services.applicationService",
+      "backends": [
+        {
+          "address": "localhost:9003"
+        }
+      ]
+    },
+{
+      "service_name": "billing.LoginService",
+      "backends": [
+        {
+          "address": "localhost:9001"
         }
       ]
     }

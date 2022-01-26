@@ -7,7 +7,7 @@ ADD . /app
 
 WORKDIR /app
 
-RUN go build -o main .
+RUN go build -o main ./cmd
 
 FROM alpine:latest
 

@@ -11,6 +11,7 @@ import (
 
 	"github.com/wmdev4/shipswift-gateway/config"
 	grpc_proxy "github.com/wmdev4/shipswift-gateway/core/grpc_proxy"
+	middlewares "github.com/wmdev4/shipswift-gateway/core/middlewares/que"
 
 	"crypto/tls"
 
@@ -74,10 +75,11 @@ func buildServer() *http.Server {
 	//build with enabling http2 clear text
 	var conf = config.Config
 	handler := NewHttpSplitter()
+	withMiddleware := middlewares.QueMiddleware(handler)
 	return &http.Server{
 		WriteTimeout: conf.HttpMaxWriteTimeout.Duration,
 		ReadTimeout:  conf.HttpMaxReadTimeout.Duration,
-		Handler:      handler,
+		Handler:      withMiddleware,
 	}
 }
 

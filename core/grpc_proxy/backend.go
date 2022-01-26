@@ -6,10 +6,13 @@ import (
 	"github.com/mwitkow/grpc-proxy/proxy"
 	"github.com/sirupsen/logrus"
 	"github.com/wmdev4/shipswift-gateway/config"
+	"github.com/wmdev4/shipswift-gateway/core/balancer"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/connectivity"
 	"google.golang.org/grpc/credentials"
 )
+
+var grpcBalancer = &balancer.LoadBalancer{}
 
 func findService(fullMethodName string) (*grpc.ClientConn, error) {
 	lock.Lock()
@@ -50,9 +53,12 @@ func dialBackendOrFail(o *config.BackEndConfig) *grpc.ClientConn {
 	} else {
 		opt = append(opt, grpc.WithInsecure())
 	}
-
+	maxSiz := o.MaxCallRecvMsgSize
+	if maxSiz == 0 {
+		maxSiz = 16 * 1024 * 1024
+	}
 	opt = append(opt,
-		grpc.WithDefaultCallOptions(grpc.MaxCallRecvMsgSize(o.MaxCallRecvMsgSize)),
+		grpc.WithDefaultCallOptions(grpc.MaxCallRecvMsgSize(maxSiz)),
 		grpc.WithBackoffMaxDelay(o.BackendBackoffMaxDelay),
 	)
 

@@ -1,0 +1,7 @@
+version: "3.9"
+services:       
+  gateway:
+    image: massoft/mas_gateway:1.2
+    restart: always
+    ports:
+      - "25555:25555"

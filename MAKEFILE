@@ -1,0 +1,18 @@
+#Dockerfile vars
+version=1.3
+#vars
+IMAGENAME=mas_gateway
+REPO=massoft
+IMAGEFULLNAME=${REPO}/${IMAGENAME}:${version}
+#IMAGEFULLNAME=gateway
+
+build:
+	    @docker build -t ${IMAGEFULLNAME} .
+
+push:
+	    @docker push ${IMAGEFULLNAME}
+
+run:
+	    @docker-compose up -d
+
+all: build push

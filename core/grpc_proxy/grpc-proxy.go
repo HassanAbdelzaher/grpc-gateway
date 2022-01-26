@@ -65,10 +65,15 @@ func buildGrpcProxyServer(logger *logrus.Entry) *grpc.Server {
 		return outCtx, backendConn, nil
 	}
 	// Server with logging and monitoring enabled.
+	sz := conf.MaxCallRecvMsgSize
+	if sz == 0 || sz < 1000 {
+		sz = 16 * 1024 * 1024
+	}
 	return grpc.NewServer(
 		grpc.CustomCodec(proxy.Codec()), // needed for proxy to function.
 		grpc.UnknownServiceHandler(proxy.TransparentHandler(director)),
-		grpc.MaxRecvMsgSize(conf.MaxCallRecvMsgSize),
+		grpc.MaxRecvMsgSize(sz),
+		grpc.MaxSendMsgSize(sz),
 		grpc_middleware.WithUnaryServerChain(
 			grpc_logrus.UnaryServerInterceptor(logger),
 			grpc_prometheus.UnaryServerInterceptor,
