@@ -22,7 +22,7 @@ import (
 	_ "golang.org/x/net/trace" // register in DefaultServerMux
 )
 
-func Start() {
+func Start(withQue bool) {
 	var conf = config.Config
 	pflag.Parse()
 	for _, flag := range pflag.Args() {
@@ -46,7 +46,7 @@ func Start() {
 
 	if conf.RunHttpServer {
 		// Debug server.
-		debugServer := buildServer()
+		debugServer := buildServer(withQue)
 		http.Handle("/metrics", promhttp.Handler())
 		http.HandleFunc("/info", grpc_proxy.HandleListMethods)
 		debugListener := buildListenerOrFail("http", conf.HttpPort)
@@ -55,7 +55,7 @@ func Start() {
 
 	if conf.RunTlsServer {
 		// Debug server.
-		servingServer := buildServer()
+		servingServer := buildServer(withQue)
 		servingListener := buildListenerOrFail("http", conf.HttpTlsPort)
 		tlsConfig := buildServerTlsOrFail(nil)
 		if tlsConfig == nil {
@@ -71,15 +71,22 @@ func Start() {
 	<-errChan
 }
 
-func buildServer() *http.Server {
+func buildServer(withQue bool) *http.Server {
 	//build with enabling http2 clear text
 	var conf = config.Config
 	handler := NewHttpSplitter()
-	withMiddleware := middlewares.QueMiddleware(handler)
+	if withQue {
+		withMiddleware := middlewares.QueMiddleware(handler)
+		return &http.Server{
+			WriteTimeout: conf.HttpMaxWriteTimeout.Duration,
+			ReadTimeout:  conf.HttpMaxReadTimeout.Duration,
+			Handler:      withMiddleware,
+		}
+	}
 	return &http.Server{
 		WriteTimeout: conf.HttpMaxWriteTimeout.Duration,
 		ReadTimeout:  conf.HttpMaxReadTimeout.Duration,
-		Handler:      withMiddleware,
+		Handler:      handler,
 	}
 }
 

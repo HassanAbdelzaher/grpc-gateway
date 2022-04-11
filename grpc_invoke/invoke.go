@@ -8,6 +8,8 @@ import (
 
 	curl "github.com/fullstorydev/grpcurl"
 	"github.com/jhump/protoreflect/grpcreflect"
+	"github.com/mwitkow/grpc-proxy/proxy"
+	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	rpb "google.golang.org/grpc/reflection/grpc_reflection_v1alpha"
 )
@@ -71,7 +73,12 @@ func InvokegRPCRequest(ctx context.Context, addr string, fullMethodName string, 
 			grpcError = &GrpcError{Code: codes.Internal, Message: "InvokeRPCRequest panic " + message}
 		}
 	}()
-	bcon, err := curl.BlockingDial(ctx, "tcp", addr, nil)
+	opt := []grpc.DialOption{}
+	opt = append(opt, grpc.WithCodec(proxy.Codec()))
+	opt = append(opt, grpc.WithInsecure())
+	opt = append(opt, grpc.WithDefaultCallOptions(grpc.MaxCallRecvMsgSize(100*1024*1024)))
+	opt = append(opt, grpc.WithDefaultCallOptions(grpc.MaxCallSendMsgSize(100*1024*1024)))
+	bcon, err := curl.BlockingDial(ctx, "tcp", addr, nil, opt...)
 	if err != nil {
 		return FromError(err)
 	}
